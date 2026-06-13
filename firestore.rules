@@ -1,0 +1,78 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function currentUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && currentUserDoc().data.isAdmin == true;
+    }
+
+    function protectedUserFields() {
+      return [
+        'isAdmin',
+        'isBanned',
+        'subscriptionStatus',
+        'managedGym',
+        'isGymOwner',
+        'isGymTrainer'
+      ];
+    }
+
+    function createDoesNotGrantRoles() {
+      return (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        && (!('isBanned' in request.resource.data) || request.resource.data.isBanned == false)
+        && (!('subscriptionStatus' in request.resource.data) || request.resource.data.subscriptionStatus == 'free')
+        && (!('managedGym' in request.resource.data) || request.resource.data.managedGym == null)
+        && (!('isGymOwner' in request.resource.data) || request.resource.data.isGymOwner == false)
+        && (!('isGymTrainer' in request.resource.data) || request.resource.data.isGymTrainer == false);
+    }
+
+    function doesNotChangeProtectedUserFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(protectedUserFields());
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create: if isSelf(uid) && createDoesNotGrantRoles();
+      allow update: if isAdmin() || (isSelf(uid) && doesNotChangeProtectedUserFields());
+      allow delete: if isAdmin();
+
+      match /sessions/{sessionId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+
+      match /routines/{routineId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+    }
+
+    match /feed/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    match /gyms/{gymId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

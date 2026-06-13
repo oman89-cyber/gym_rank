@@ -1,0 +1,46 @@
+name: gym_rank
+description: "A gamified fitness RPG app — track lifts, rank up, compete globally."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+  hive_flutter: ^1.1.0
+  uuid: ^4.5.1
+  firebase_core: ^4.6.0
+  cloud_firestore: ^6.2.0
+  firebase_auth: ^6.3.0
+  google_sign_in: ^7.2.0
+  google_generative_ai: ^0.4.6
+  image_picker: ^1.0.8
+  flutter_markdown: ^0.7.4
+  web_socket_channel: ^3.0.1
+  audioplayers: ^6.0.0
+  flutter_body_atlas: ^0.1.4
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
+  flutter_timezone: ^5.0.2
+  intl: ^0.20.2
+  confetti: ^0.8.0
+  camera: ^0.11.0
+  google_mlkit_pose_detection: ^0.12.0
+  flutter_tts: ^4.2.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/data/
+    - assets/radar_images/
+    - assets/rank_badge/
